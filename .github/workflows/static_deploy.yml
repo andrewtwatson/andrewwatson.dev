@@ -53,8 +53,6 @@ jobs:
           cd galant-project
           jq '. + {"homepage": "/projects/galant"}' package.json > package.json.tmp
           mv package.json.tmp package.json
-          sed 's/<BrowserRouter>/<BrowserRouter basename="\/projects\/galant">/g' ./src/index.js > ./src/index.js.tmp
-          mv ./src/index.js.tmp ./src/index.js
       
       - name: Install Galant dependencies, build project
         run: |
