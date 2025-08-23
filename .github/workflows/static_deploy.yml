@@ -29,15 +29,50 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout main site
         uses: actions/checkout@v4
+        with:
+          path: main-site
+      
+      - name: Checkout Galant project
+        uses: actions/checkout@v4
+        with:
+          repository: andrewtwatson/galant_senior_design_archive
+          #token: ${{ secrets.GITHUB_TOKEN }}
+          path: galant-project
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: galant-project/package-lock.json
+        
+      # Add "homepage" line to package.json
+      - name: Modify React package.json for subpath
+        run: |
+          cd galant-project
+          jq '. + {"homepage": "/projects/galant"}' package.json > package.json.tmp
+          mv package.json.tmp package.json
+      
+      - name: Install Galant dependencies, build project
+        run: |
+          cd galant-project
+          npm ci
+          npm run build
+
+      - name: Copy React build to main site
+        run: |
+          mkdir -p main-site/deploy/projects/galant
+          cp -r galant-project/build/* main-site/deploy/projects/galant
+      
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload deploy folder
-          path: './deploy'
+          path: './main-site/deploy'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
