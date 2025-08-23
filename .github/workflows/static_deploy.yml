@@ -38,7 +38,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: andrewtwatson/galant_senior_design_archive
-          #token: ${{ secrets.GITHUB_TOKEN }}
           path: galant-project
 
       - name: Setup Node.js
@@ -49,11 +48,14 @@ jobs:
           cache-dependency-path: galant-project/package-lock.json
         
       # Add "homepage" line to package.json
-      - name: Modify React package.json for subpath
+      - name: Modify React package.json for subpath, modify <BrowserRouter> basename
         run: |
           cd galant-project
           jq '. + {"homepage": "/projects/galant"}' package.json > package.json.tmp
           mv package.json.tmp package.json
+          sed 's/<BrowserRouter>/<BrowserRouter basename="\/projects\/galant">/g' ./src/index.js > ./src/index.js.tmp
+          mv ./src/index.js.tmp ./src/index.js
+          rm package.json.tmp ./src/index.js.tmp
       
       - name: Install Galant dependencies, build project
         run: |
